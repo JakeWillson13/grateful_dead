@@ -6,10 +6,10 @@ import requests
 from bs4 import BeautifulSoup
 import plotly.express as px
 
+# URL to raw CSV on GitHub
+CSV_URL = "https://raw.githubusercontent.com/JakeWillson13/grateful_dead/main/gratefuldead.csv"
+
 # Function to compute text metrics
-@st.cache_data
-if False:  # Prevent Streamlit from caching at parse time
-    pass
 def text_metrics(lyrics: str):
     words = re.findall(r"\b\w+\b", lyrics.lower())
     n = len(words)
@@ -18,8 +18,8 @@ def text_metrics(lyrics: str):
     lengths = [len(w) for w in words]
     return n, np.mean(lengths), len(set(words))
 
-# Cache and load all lyrics
 @st.cache_data
+# Load and process all Grateful Dead lyrics from CMU archive
 def load_lyrics():
     BASE = 'https://www.cs.cmu.edu/~mleone/'
     idx = requests.get(BASE + 'dead-lyrics.html').text
@@ -34,51 +34,54 @@ def load_lyrics():
     df = pd.DataFrame(rows)
 
     metrics = df['lyrics'].map(text_metrics)
-    df[['word_count','avg_word_length','unique_word_count']] = pd.DataFrame(metrics.tolist(), index=df.index)
+    df[['word_count', 'avg_word_length', 'unique_word_count']] = pd.DataFrame(metrics.tolist(), index=df.index)
     df['lexical_diversity'] = df['unique_word_count'] / df['word_count'].replace(0, np.nan)
     return df
 
-# Cache and load top 50 subset from uploaded CSV
 @st.cache_data
+# Load top 50 subset from uploaded CSV file
 def load_top50(csv_file):
     top = pd.read_csv(csv_file)
     return top.sort_values('rank').head(50)
 
-# Main application
+@st.cache_data
+# Fetch top 50 from GitHub raw CSV
+def load_top50_from_url():
+    top = pd.read_csv(CSV_URL)
+    return top.sort_values('rank').head(50)
+
+# Main Streamlit app
 def main():
     st.set_page_config(page_title="Grateful Dead Lyrics Dashboard", layout="wide")
     st.title("🎸 Grateful Dead Lyrics Dashboard")
     st.markdown("Explore lyric complexity vs popularity across Grateful Dead songs.")
 
-    # Load and display all lyrics metrics
+    # Scrape and process lyrics
     with st.spinner("Scraping and processing lyrics..."):
         df_lyrics = load_lyrics()
 
+    # Display all songs metrics table
     st.header("All Songs Metrics")
     st.dataframe(
-        df_lyrics[['title','word_count','avg_word_length','unique_word_count','lexical_diversity']]
-        .sort_values('word_count', ascending=False)
-        .rename(columns={
-            'title': 'Title',
-            'word_count': 'Total Word Count',
-            'avg_word_length': 'Avg Word Length',
-            'unique_word_count': 'Unique Word Count',
-            'lexical_diversity': 'Lexical Diversity'
-        }),
+        df_lyrics[['title', 'word_count', 'avg_word_length', 'unique_word_count', 'lexical_diversity']]
+            .sort_values('word_count', ascending=False)
+            .rename(columns={
+                'title': 'Title',
+                'word_count': 'Total Word Count',
+                'avg_word_length': 'Avg Word Length',
+                'unique_word_count': 'Unique Word Count',
+                'lexical_diversity': 'Lexical Diversity'
+            }),
         use_container_width=True
     )
 
-    # Sidebar: CSV uploader for top 50
-    st.sidebar.header("Top 50 Songs")
-    csv_file = st.sidebar.file_uploader("Upload 'gratefuldead.csv'", type=['csv'])
-
-    # Plot for all songs
+    # Scatter for all songs
     st.subheader("Scatter: Unique vs Total Words (All Songs)")
     fig_all = px.scatter(
         df_lyrics,
         x='word_count', y='unique_word_count',
         hover_name='title', color='lexical_diversity',
-        size='avg_word_length', title='Unique vs Total Words (All Songs)',
+        size='avg_word_length',
         labels={
             'word_count': 'Total Word Count',
             'unique_word_count': 'Unique Word Count',
@@ -87,43 +90,49 @@ def main():
         },
         size_max=20
     )
-    fig_all.update_layout(margin=dict(l=40, r=40, t=50, b=40))
+    fig_all.update_layout(title='Unique vs Total Words (All Songs)', margin=dict(l=40, r=40, t=50, b=40))
     st.plotly_chart(fig_all, use_container_width=True)
 
-    # If CSV provided, show top 50 plot
-    if csv_file:
-        with st.spinner("Loading Top 50 CSV and merging..."):
+    # Sidebar: optional CSV uploader
+    st.sidebar.header("Top 50 Songs")
+    csv_file = st.sidebar.file_uploader(
+        "Upload 'gratefuldead.csv' (or leave blank to fetch from GitHub)",
+        type=['csv']
+    )
+
+    # Load Top 50 data
+    with st.spinner("Loading Top 50 songs..."):
+        if csv_file:
             top50 = load_top50(csv_file)
-            merged = pd.merge(
-                top50,
-                df_lyrics,
-                how='inner',
-                left_on='Title',
-                right_on='title'
-            )
-
-        st.subheader("Scatter: Top 50 Songs")
-        fig_top = px.scatter(
-            merged,
-            x='word_count', y='unique_word_count',
-            size='rank', color='lexical_diversity',
-            color_continuous_scale='Plasma',
-            hover_name='Title',
-            title='Top 50 Grateful Dead Songs: Unique vs Total Words',
-            labels={
-                'word_count': 'Total Word Count',
-                'unique_word_count': 'Unique Word Count',
-                'rank': 'Popularity Score',
-                'lexical_diversity': 'Lexical Diversity'
-            },
-            size_max=25
+        else:
+            top50 = load_top50_from_url()
+        merged = pd.merge(
+            top50,
+            df_lyrics,
+            how='inner',
+            left_on='Title',
+            right_on='title'
         )
-        fig_top.update_traces(marker=dict(opacity=0.8, line=dict(width=1, color='white')))
-        fig_top.update_layout(margin=dict(l=40, r=40, t=50, b=40))
-        st.plotly_chart(fig_top, use_container_width=True)
 
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("Built with ❤️ using Streamlit")
+    # Scatter for top 50 songs
+    st.subheader("Scatter: Top 50 Songs")
+    fig_top = px.scatter(
+        merged,
+        x='word_count', y='unique_word_count',
+        size='rank', color='lexical_diversity',
+        color_continuous_scale='Plasma',
+        hover_name='Title',
+        labels={
+            'word_count': 'Total Word Count',
+            'unique_word_count': 'Unique Word Count',
+            'rank': 'Popularity Score',
+            'lexical_diversity': 'Lexical Diversity'
+        },
+        size_max=25
+    )
+    fig_top.update_traces(marker=dict(opacity=0.8, line=dict(width=1, color='white')))
+    fig_top.update_layout(title='Top 50 Grateful Dead Songs: Unique vs Total Words', margin=dict(l=40, r=40, t=50, b=40))
+    st.plotly_chart(fig_top, use_container_width=True)
 
 if __name__ == '__main__':
     main()
