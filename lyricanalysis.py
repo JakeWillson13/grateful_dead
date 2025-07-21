@@ -53,15 +53,15 @@ def load_top50_from_url():
 # Main Streamlit app
 def main():
     st.set_page_config(page_title="Grateful Dead Lyrics Dashboard", layout="wide")
-    st.title("🎸 Grateful Dead Lyrics Dashboard")
-    st.markdown("Explore lyric complexity vs popularity across Grateful Dead songs.")
+    st.title("Grateful Dead Lyrics Analysis")
+    st.markdown("Exploring lyric complexity vs popularity across Grateful Dead songs.")
 
     # Scrape and process lyrics
     with st.spinner("Scraping and processing lyrics..."):
         df_lyrics = load_lyrics()
 
     # Display all songs metrics table
-    st.header("All Songs Metrics")
+    st.header("Word Analysis Metrics")
     st.dataframe(
         df_lyrics[['title', 'word_count', 'avg_word_length', 'unique_word_count', 'lexical_diversity']]
             .sort_values('word_count', ascending=False)
@@ -76,7 +76,6 @@ def main():
     )
 
     # Scatter for all songs
-    st.subheader("Scatter: Unique vs Total Words (All Songs)")
     fig_all = px.scatter(
         df_lyrics,
         x='word_count', y='unique_word_count',
@@ -108,7 +107,7 @@ def main():
         )
 
     # Scatter for top 50 songs
-    st.subheader("Scatter: Top 50 Songs")
+    st.subheader("Top 50 Songs by Spotify Streams")
     fig_top = px.scatter(
         merged,
         x='word_count', y='unique_word_count',
