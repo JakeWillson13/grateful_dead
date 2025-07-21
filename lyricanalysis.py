@@ -47,7 +47,7 @@ def load_top50_from_url():
 def main():
     st.set_page_config(page_title="Grateful Dead Lyrics Dashboard", layout="wide")
     st.title("Grateful Dead Lyric Analysis")
-    st.markdown("Explore lyric complexity vs popularity across 309 Grateful Dead songs.")
+    st.markdown("Explore lyric complexity across 309 Grateful Dead songs.")
 
     # Scrape and process lyrics
     with st.spinner("Scraping and processing lyrics..."):
