@@ -123,9 +123,5 @@ def main():
     )
     st.plotly_chart(fig_top, use_container_width=True)
 
-    # Footer in sidebar
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("Built with ❤️ using Streamlit")
-
 if __name__ == '__main__':
     main()
