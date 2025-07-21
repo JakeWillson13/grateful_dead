@@ -93,13 +93,6 @@ def main():
     fig_all.update_layout(title='Unique vs Total Words (All Songs)', margin=dict(l=40, r=40, t=50, b=40))
     st.plotly_chart(fig_all, use_container_width=True)
 
-    # Sidebar: optional CSV uploader
-    st.sidebar.header("Top 50 Songs")
-    csv_file = st.sidebar.file_uploader(
-        "Upload 'gratefuldead.csv' (or leave blank to fetch from GitHub)",
-        type=['csv']
-    )
-
     # Load Top 50 data
     with st.spinner("Loading Top 50 songs..."):
         if csv_file:
