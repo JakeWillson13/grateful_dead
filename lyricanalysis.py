@@ -75,6 +75,7 @@ def main():
         x='word_count', y='unique_word_count',
         hover_name='title', color='lexical_diversity',
         size='avg_word_length',
+        color_continuous_scale='Plasma',
         labels={
             'word_count': 'Total Word Count',
             'unique_word_count': 'Unique Word Count',
