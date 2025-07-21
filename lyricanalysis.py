@@ -53,15 +53,15 @@ def load_top50_from_url():
 # Main Streamlit app
 def main():
     st.set_page_config(page_title="Grateful Dead Lyrics Dashboard", layout="wide")
-    st.title("Grateful Dead Lyrics Analysis")
-    st.markdown("Exploring lyric complexity vs popularity across Grateful Dead songs.")
+    st.title("Grateful Dead Lyric Analysis")
+    st.markdown("Explore lyric complexity vs popularity across Grateful Dead songs.")
 
     # Scrape and process lyrics
     with st.spinner("Scraping and processing lyrics..."):
         df_lyrics = load_lyrics()
 
     # Display all songs metrics table
-    st.header("Word Analysis Metrics")
+    st.header("All Songs Metrics")
     st.dataframe(
         df_lyrics[['title', 'word_count', 'avg_word_length', 'unique_word_count', 'lexical_diversity']]
             .sort_values('word_count', ascending=False)
@@ -76,6 +76,7 @@ def main():
     )
 
     # Scatter for all songs
+    st.subheader("Lyrical Analysis Metrics (309 Songs)")
     fig_all = px.scatter(
         df_lyrics,
         x='word_count', y='unique_word_count',
@@ -89,7 +90,7 @@ def main():
         },
         size_max=20
     )
-    fig_all.update_layout(title='Unique vs Total Words (All Songs)', margin=dict(l=40, r=40, t=50, b=40))
+    fig_all.update_layout(title='Unique Words vs Total Word Count', margin=dict(l=40, r=40, t=50, b=40))
     st.plotly_chart(fig_all, use_container_width=True)
 
     # Load Top 50 data
@@ -107,7 +108,7 @@ def main():
         )
 
     # Scatter for top 50 songs
-    st.subheader("Top 50 Songs by Spotify Streams")
+    st.subheader("Unique vs Total Word Count (Top 50 Songs)")
     fig_top = px.scatter(
         merged,
         x='word_count', y='unique_word_count',
@@ -125,6 +126,10 @@ def main():
     fig_top.update_traces(marker=dict(opacity=0.8, line=dict(width=1, color='white')))
     fig_top.update_layout(title='Top 50 Grateful Dead Songs: Unique vs Total Words', margin=dict(l=40, r=40, t=50, b=40))
     st.plotly_chart(fig_top, use_container_width=True)
+
+    # Footer in sidebar
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("Built with ❤️ using Streamlit")
 
 if __name__ == '__main__':
     main()
