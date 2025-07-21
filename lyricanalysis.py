@@ -95,9 +95,6 @@ def main():
 
     # Load Top 50 data
     with st.spinner("Loading Top 50 songs..."):
-        if csv_file:
-            top50 = load_top50(csv_file)
-        else:
             top50 = load_top50_from_url()
         merged = pd.merge(
             top50,
