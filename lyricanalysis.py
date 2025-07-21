@@ -19,7 +19,6 @@ def text_metrics(lyrics: str):
     return n, np.mean(lengths), len(set(words))
 
 @st.cache_data
-# Load and process all Grateful Dead lyrics from CMU archive
 def load_lyrics():
     BASE = 'https://www.cs.cmu.edu/~mleone/'
     idx = requests.get(BASE + 'dead-lyrics.html').text
@@ -34,23 +33,17 @@ def load_lyrics():
     df = pd.DataFrame(rows)
 
     metrics = df['lyrics'].map(text_metrics)
-    df[['word_count', 'avg_word_length', 'unique_word_count']] = pd.DataFrame(metrics.tolist(), index=df.index)
+    df[['word_count', 'avg_word_length', 'unique_word_count']] = pd.DataFrame(
+        metrics.tolist(), index=df.index
+    )
     df['lexical_diversity'] = df['unique_word_count'] / df['word_count'].replace(0, np.nan)
     return df
 
 @st.cache_data
-# Load top 50 subset from uploaded CSV file
-def load_top50(csv_file):
-    top = pd.read_csv(csv_file)
-    return top.sort_values('rank').head(50)
-
-@st.cache_data
-# Fetch top 50 from GitHub raw CSV
 def load_top50_from_url():
     top = pd.read_csv(CSV_URL)
     return top.sort_values('rank').head(50)
 
-# Main Streamlit app
 def main():
     st.set_page_config(page_title="Grateful Dead Lyrics Dashboard", layout="wide")
     st.title("Grateful Dead Lyric Analysis")
@@ -90,12 +83,15 @@ def main():
         },
         size_max=20
     )
-    fig_all.update_layout(title='Unique Words vs Total Word Count', margin=dict(l=40, r=40, t=50, b=40))
+    fig_all.update_layout(
+        title='Unique Words vs Total Word Count',
+        margin=dict(l=40, r=40, t=50, b=40)
+    )
     st.plotly_chart(fig_all, use_container_width=True)
 
-    # Load Top 50 data
+    # Load and merge Top 50 data
     with st.spinner("Loading Top 50 songs..."):
-            top50 = load_top50_from_url()
+        top50 = load_top50_from_url()
         merged = pd.merge(
             top50,
             df_lyrics,
@@ -121,7 +117,10 @@ def main():
         size_max=25
     )
     fig_top.update_traces(marker=dict(opacity=0.8, line=dict(width=1, color='white')))
-    fig_top.update_layout(title='Top 50 Grateful Dead Songs: Unique vs Total Words', margin=dict(l=40, r=40, t=50, b=40))
+    fig_top.update_layout(
+        title='Top 50 Grateful Dead Songs: Unique vs Total Words',
+        margin=dict(l=40, r=40, t=50, b=40)
+    )
     st.plotly_chart(fig_top, use_container_width=True)
 
     # Footer in sidebar
