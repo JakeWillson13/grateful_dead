@@ -131,7 +131,7 @@ def main():
     stopwords_set = set(STOPWORDS)
     custom_stopwords = set([
         'don','t','gotta','come','gonna',
-        'said','just','one','s'
+        'said','just','one','s','know'
     ])
     stopwords_set.update(custom_stopwords)
     filtered_words = [w for w in words_top50 if w not in stopwords_set]
