@@ -141,7 +141,8 @@ def main():
     word_counts = Counter(filtered_words)
     wc = WordCloud(
         width=800, height=400,
-        background_color='white',
+        background_color=None,  # ← transparent background
+        mode='RGBA',
         stopwords=stopwords_set,
         min_font_size=10
     ).generate_from_frequencies(word_counts)
