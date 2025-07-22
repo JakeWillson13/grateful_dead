@@ -8,7 +8,6 @@ import plotly.express as px
 from collections import Counter
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 
 # URL to raw CSV on GitHub
 CSV_URL = "https://raw.githubusercontent.com/JakeWillson13/grateful_dead/main/gratefuldead.csv"
@@ -53,9 +52,11 @@ def main():
     st.title("Grateful Dead Lyric Analysis")
     st.markdown("Explore lyric complexity vs popularity across Grateful Dead songs.")
 
+    # Scrape and process lyrics
     with st.spinner("Scraping and processing lyrics..."):
         df_lyrics = load_lyrics()
 
+    # Display all songs metrics table
     st.header("All Songs Metrics")
     st.dataframe(
         df_lyrics[['title', 'word_count', 'avg_word_length', 'unique_word_count', 'lexical_diversity']]
@@ -70,6 +71,7 @@ def main():
         use_container_width=True
     )
 
+    # Scatter for all songs
     st.subheader("Lyrical Analysis Metrics (309 Songs)")
     fig_all = px.scatter(
         df_lyrics,
@@ -90,6 +92,7 @@ def main():
     )
     st.plotly_chart(fig_all, use_container_width=True)
 
+    # Load and merge Top 50 data
     with st.spinner("Loading Top 50 songs..."):
         top50 = load_top50_from_url()
         merged = pd.merge(
@@ -100,6 +103,7 @@ def main():
             right_on='title'
         )
 
+    # Scatter for top 50 songs
     st.subheader("Unique vs Total Word Count (Top 50 Songs)")
     fig_top = px.scatter(
         merged,
@@ -122,37 +126,30 @@ def main():
     )
     st.plotly_chart(fig_top, use_container_width=True)
 
+    # Word Cloud for Top 50 Lyrics
     st.subheader("Word Cloud: Top 50 Songs")
     all_lyrics_top50 = ' '.join(merged['lyrics'].tolist())
-    words_top50 = re.findall(r'\b\w+\b', all_lyrics_top50.lower())
+    words_top50 = re.findall(r"\b\w+\b", all_lyrics_top50.lower())
     stopwords_set = set(STOPWORDS)
-    custom_stopwords = {
+    custom_stopwords = set([
         'like','know','don','t','got','get','gotta','come','going','gonna',
         'said','just','one','see','well','little','say','man','can','back',
         'tell','never','always','around','dead','grateful'
-    }
+    ])
     stopwords_set.update(custom_stopwords)
     filtered_words = [w for w in words_top50 if w not in stopwords_set]
     word_counts = Counter(filtered_words)
-
-    plasma = cm.get_cmap('plasma')
-    def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
-        normalized = font_size / max(word_counts.values())
-        rgba = plasma(normalized)
-        return f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)"
-
     wc = WordCloud(
         width=800, height=400,
-        background_color=None, mode='RGBA',
+        background_color='white',
         stopwords=stopwords_set,
-        min_font_size=10,
-        color_func=color_func
+        min_font_size=10
     ).generate_from_frequencies(word_counts)
-
-    fig_wc, ax = plt.subplots(figsize=(10, 5))
+    fig_wc, ax = plt.subplots(figsize=(8, 4))
     ax.imshow(wc, interpolation='bilinear')
     ax.axis('off')
     st.pyplot(fig_wc)
 
 if __name__ == '__main__':
     main()
+
