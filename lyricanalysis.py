@@ -5,6 +5,9 @@ import re
 import requests
 from bs4 import BeautifulSoup
 import plotly.express as px
+from collections import Counter
+from wordcloud import WordCloud, STOPWORDS
+import matplotlib.pyplot as plt
 
 # URL to raw CSV on GitHub
 CSV_URL = "https://raw.githubusercontent.com/JakeWillson13/grateful_dead/main/gratefuldead.csv"
