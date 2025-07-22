@@ -9,6 +9,7 @@ from collections import Counter
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.colors as mcolors
 
 # URL to raw CSV on GitHub
 CSV_URL = "https://raw.githubusercontent.com/JakeWillson13/grateful_dead/main/gratefuldead.csv"
@@ -76,6 +77,7 @@ def main():
         x='word_count', y='unique_word_count',
         hover_name='title', color='lexical_diversity',
         size='avg_word_length',
+        color_continuous_scale='Plasma',
         labels={
             'word_count': 'Total Word Count',
             'unique_word_count': 'Unique Word Count',
@@ -137,10 +139,13 @@ def main():
     word_counts = Counter(filtered_words)
 
     plasma = cm.get_cmap('plasma')
+    norm = mcolors.Normalize(vmin=0, vmax=max(word_counts.values()))
+
     def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
-        normalized = font_size / max(word_counts.values())
-        rgba = plasma(normalized)
-        return f"rgba({int(rgba[0]*255)}, {int(rgba[1]*255)}, {int(rgba[2]*255)}, 0.8)"
+        rgba = plasma(norm(word_counts[word]))
+        return "rgba({},{},{},{})".format(
+            int(rgba[0]*255), int(rgba[1]*255), int(rgba[2]*255), 200/255
+        )
 
     wc = WordCloud(
         width=800, height=400,
@@ -157,4 +162,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
