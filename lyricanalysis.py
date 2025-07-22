@@ -131,7 +131,7 @@ def main():
     stopwords_set = set(STOPWORDS)
     custom_stopwords = set([
         'like','know','don','t','got','get','gotta','come','going','gonna',
-        'said','just','one','see','well','little','say','man','can','back',
+        'said','just','one','s','well','little','say','man','can','back',
         'tell','never','always','around','dead','grateful'
     ])
     stopwords_set.update(custom_stopwords)
