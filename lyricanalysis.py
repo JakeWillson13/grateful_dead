@@ -5,9 +5,6 @@ import re
 import requests
 from bs4 import BeautifulSoup
 import plotly.express as px
-from collections import Counter
-from wordcloud import WordCloud, STOPWORDS
-import matplotlib.pyplot as plt
 
 # URL to raw CSV on GitHub
 CSV_URL = "https://raw.githubusercontent.com/JakeWillson13/grateful_dead/main/gratefuldead.csv"
@@ -126,29 +123,9 @@ def main():
     )
     st.plotly_chart(fig_top, use_container_width=True)
 
-    # Word Cloud for Top 50 Lyrics
-    st.subheader("Word Cloud: Top 50 Songs")
-    all_lyrics_top50 = ' '.join(merged['lyrics'].tolist())
-    words_top50 = re.findall(r"\b\w+\b", all_lyrics_top50.lower())
-    stopwords_set = set(STOPWORDS)
-    custom_stopwords = set([
-        'like','know','don','t','got','get','gotta','come','going','gonna',
-        'said','just','one','see','well','little','say','man','can','back',
-        'tell','never','always','around','dead','grateful'
-    ])
-    stopwords_set.update(custom_stopwords)
-    filtered_words = [w for w in words_top50 if w not in stopwords_set]
-    word_counts = Counter(filtered_words)
-    wc = WordCloud(
-        width=800, height=400,
-        background_color='white',
-        stopwords=stopwords_set,
-        min_font_size=10
-    ).generate_from_frequencies(word_counts)
-    fig_wc, ax = plt.subplots(figsize=(8, 4))
-    ax.imshow(wc, interpolation='bilinear')
-    ax.axis('off')
-    st.pyplot(fig_wc)
+    # Footer in sidebar
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("Built with ❤️ using Streamlit")
 
 if __name__ == '__main__':
     main()
