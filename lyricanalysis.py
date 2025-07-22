@@ -130,9 +130,8 @@ def main():
     words_top50 = re.findall(r"\b\w+\b", all_lyrics_top50.lower())
     stopwords_set = set(STOPWORDS)
     custom_stopwords = set([
-        'like','know','don','t','got','get','gotta','come','going','gonna',
-        'said','just','one','s','well','little','say','man','can','back',
-        'tell','never','always','around','dead','grateful'
+        'don','t','gotta','come','gonna',
+        'said','just','one','s'
     ])
     stopwords_set.update(custom_stopwords)
     filtered_words = [w for w in words_top50 if w not in stopwords_set]
